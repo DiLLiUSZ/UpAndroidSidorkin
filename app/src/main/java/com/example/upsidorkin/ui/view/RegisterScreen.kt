@@ -1,7 +1,6 @@
 package com.example.upsidorkin.ui.view
 
-import android.app.AlertDialog
-import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,14 +30,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.upsidorkin.R
 import com.example.upsidorkin.ui.theme.UpSidorkinTheme
+import com.example.upsidorkin.ui.viewModel.SignUpViewModel
 
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit = {},
-    onLoginClick: () -> Unit = {}
+    navController: NavHostController,
+    viewModel: SignUpViewModel = viewModel()
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -46,6 +50,14 @@ fun RegisterScreen(
     var isTermsAccepted by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+
+    // если возникла ошибка из ViewModel – показываем тост
+    LaunchedEffect(viewModel.errorMessage.value) {
+        viewModel.errorMessage.value?.let { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+        }
+    }
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -72,7 +84,10 @@ fun RegisterScreen(
                         .size(32.dp)
                         .clip(CircleShape)
                         .background(Color(0xFFF2F2F2))
-                        .clickable { onBackClick() },
+                        .clickable {
+                            // если есть куда вернуться – вернёмся, иначе ничего
+                            navController.popBackStack()
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -120,7 +135,7 @@ fun RegisterScreen(
             StyledTextField(
                 value = name,
                 onValueChange = { name = it },
-                placeholder = "xxxxxxxxx"
+                placeholder = "Иван Иванов"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +152,7 @@ fun RegisterScreen(
             StyledTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = "xyz@gmail.com",
+                placeholder = "example@gmail.com",
                 keyboardType = KeyboardType.Email
             )
 
@@ -199,10 +214,22 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Кнопка "Зарегистрироваться" цвет #2B6B8B
+            // Кнопка "Зарегистрироваться"
             Button(
                 onClick = {
-                    // здесь можно вставить вашу реальную логику регистрации
+                    if (validateInputs(name, email, password, isTermsAccepted)) {
+                        viewModel.signUp(
+                            email.trim(),
+                            password.trim(),
+                            navController
+                        )
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Проверьте введённые данные",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -214,18 +241,27 @@ fun RegisterScreen(
                     disabledContainerColor = Color(0xFFCED6DD),
                     disabledContentColor = Color.White
                 ),
-                enabled = validateInputs(name, email, password, isTermsAccepted)
+                enabled = !viewModel.isLoading.value &&
+                        validateInputs(name, email, password, isTermsAccepted)
             ) {
-                Text(
-                    text = "Зарегистрироваться",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                if (viewModel.isLoading.value) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        text = "Зарегистрироваться",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Низ: "Есть аккаунт? Войти"
+            // Низ: "Есть аккаунт? Войти" — пока просто заглушка
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -243,7 +279,9 @@ fun RegisterScreen(
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF205B89),
-                    modifier = Modifier.clickable { onLoginClick() }
+                    modifier = Modifier.clickable {
+                        // navController.navigate("login")  // когда появится экран логина
+                    }
                 )
             }
         }
@@ -321,10 +359,8 @@ fun ShieldCheckbox(
     }
 }
 
-// Валидация
 fun isValidEmail(email: String): Boolean {
-    val pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
-    return pattern.matches(email)
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
 
 fun validateInputs(
@@ -339,34 +375,11 @@ fun validateInputs(
             isTermsAccepted
 }
 
-fun showValidationError(
-    name: String,
-    email: String,
-    password: String,
-    isTermsAccepted: Boolean,
-    context: Context
-) {
-    val errorMessage = when {
-        name.trim().isEmpty() -> "Введите ваше имя"
-        email.trim().isEmpty() -> "Введите email"
-        !isValidEmail(email.trim()) -> "Некорректный email адрес"
-        password.trim().isEmpty() -> "Введите пароль"
-        password.length < 8 -> "Пароль должен содержать минимум 8 символов"
-        !isTermsAccepted -> "Необходимо принять условия"
-        else -> "Проверьте введенные данные"
-    }
-
-    AlertDialog.Builder(context)
-        .setTitle("Ошибка")
-        .setMessage(errorMessage)
-        .setPositiveButton("OK", null)
-        .show()
-}
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun RegisterScreenPreview() {
     UpSidorkinTheme {
-        RegisterScreen()
+        val navController = rememberNavController()
+        RegisterScreen(navController = navController)
     }
 }
