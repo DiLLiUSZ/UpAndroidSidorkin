@@ -1,5 +1,6 @@
 package com.example.upsidorkin.ui.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,7 +42,6 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
-
     val scrollState = rememberScrollState()
 
     Surface(
@@ -54,39 +54,32 @@ fun LoginScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 24.dp)
         ) {
-
             Spacer(modifier = Modifier.height(50.dp))
 
-            // Назад
-            Row(
+            // Кнопка "Назад"
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF2F2F2))
+                    .clickable { navController.popBackStack() },
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .clickable { navController.popBackStack() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.arrow),
-                        contentDescription = "Назад",
-                        tint = Color(0xFF555555)
-                    )
-                }
+                Icon(
+                    painter = painterResource(id = R.drawable.arrow),
+                    contentDescription = "Назад",
+                    tint = Color(0xFF555555)
+                )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp)) // Такой же отступ как в Register
 
             Text(
                 text = "Привет!",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF333333),
-                textAlign = TextAlign.Center,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -96,11 +89,11 @@ fun LoginScreen(
                 text = "Заполните Свои Данные",
                 fontSize = 14.sp,
                 color = Color(0xFFB0B0B0),
-                textAlign = TextAlign.Center,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(40.dp)) // Был 60, стал 40 для симметрии с Register
 
             // Email
             Text(
@@ -132,7 +125,7 @@ fun LoginScreen(
             StyledTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = "",
+                placeholder = "********",
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
                         Icon(
@@ -160,9 +153,7 @@ fun LoginScreen(
                 color = Color(0xFF9E9E9E),
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable {
-                        // TODO: экран восстановления
-                    }
+                    .clickable { /* TODO */ }
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -191,13 +182,14 @@ fun LoginScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(150.dp))
+            // Заполнитель пространства
+            Spacer(modifier = Modifier.weight(1f))
 
             // Низ: "Вы впервые? Создать"
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
+                    .padding(vertical = 24.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -220,7 +212,7 @@ fun LoginScreen(
     }
 }
 
-// Используем тот же StyledTextField, что и в RegisterScreen
+// Переиспользуемый компонент для ввода текста (копия для автономности файла)
 @Composable
 private fun StyledTextField(
     value: String,
@@ -260,6 +252,7 @@ private fun StyledTextField(
     )
 }
 
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginScreenPreview() {
     UpSidorkinTheme {

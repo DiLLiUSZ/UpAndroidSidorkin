@@ -2,7 +2,6 @@ package com.example.upsidorkin.ui.view
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -26,10 +25,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.upsidorkin.R
 import com.example.upsidorkin.ui.theme.UpSidorkinTheme
 import com.example.upsidorkin.ui.viewModel.SignUpViewModel
@@ -46,16 +47,16 @@ fun RegisterScreen(
     var showPassword by remember { mutableStateOf(false) }
     var isTermsAccepted by remember { mutableStateOf(false) }
 
+    // Используем .verticalScroll(rememberScrollState()) в модификаторе Column,
+    // но с fillMaxHeight() для правильной работы веса (weight)
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    // Проверка валидности формы в реальном времени
     val isFormValid = name.isNotBlank() &&
             android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
             password.length >= 6 &&
             isTermsAccepted
 
-    // Показываем ошибку из ViewModel
     LaunchedEffect(viewModel.errorMessage.value) {
         viewModel.errorMessage.value?.let { msg ->
             Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
@@ -66,6 +67,8 @@ fun RegisterScreen(
         modifier = modifier.fillMaxSize(),
         color = Color.White
     ) {
+        // Чтобы weight(1f) работал внутри скролла, используем fillMaxSize()
+        // и verticalScroll().
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -74,7 +77,7 @@ fun RegisterScreen(
         ) {
             Spacer(modifier = Modifier.height(50.dp))
 
-            // Кнопка «назад»
+            // Кнопка "Назад"
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -90,12 +93,13 @@ fun RegisterScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             Text("Регистрация", fontSize = 30.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF333333), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(4.dp))
             Text("Заполните Свои Данные", fontSize = 14.sp, color = Color(0xFFB0B0B0), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-            Spacer(modifier = Modifier.height(60.dp))
+
+            Spacer(modifier = Modifier.height(40.dp))
 
             // Поля ввода
             Text("Ваше имя", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF333333), modifier = Modifier.padding(bottom = 6.dp))
@@ -131,26 +135,21 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // --- КНОПКА РЕГИСТРАЦИИ ---
+            // Кнопка
             Button(
                 onClick = {
-                    // Вызываем ViewModel. Переход произойдет внутри ViewModel при успехе
                     viewModel.signUp(email.trim(), password.trim(), navController)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = RoundedCornerShape(18.dp),
-                // Логика цвета:
-                // Активна (валидна и не грузится) -> #48B2E7
-                // Неактивна -> #2B6B8B
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF48B2E7),
                     contentColor = Color.White,
                     disabledContainerColor = Color(0xFF2B6B8B),
                     disabledContentColor = Color.White
                 ),
-                // Кнопка активна только если форма валидна и нет загрузки
                 enabled = isFormValid && !viewModel.isLoading.value
             ) {
                 if (viewModel.isLoading.value) {
@@ -159,13 +158,10 @@ fun RegisterScreen(
                     Text("Зарегистрироваться", fontSize = 16.sp, fontWeight = FontWeight.Medium)
                 }
             }
-            // ---------------------------
 
-            Spacer(modifier = Modifier.height(150.dp))
 
-            // Вход
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -176,7 +172,7 @@ fun RegisterScreen(
     }
 }
 
-// Вспомогательные компоненты (StyledTextField, ShieldCheckbox) оставьте без изменений
+// ОСТАВЬТЕ StyledTextField и ShieldCheckbox ТАКИМИ ЖЕ, КАК БЫЛИ
 @Composable
 private fun StyledTextField(
     value: String,
@@ -217,5 +213,14 @@ fun ShieldCheckbox(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Icon(painter = painterResource(id = R.drawable.shield), contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun RegisterScreenPreview() {
+    UpSidorkinTheme {
+        val navController = rememberNavController()
+        RegisterScreen(navController = navController)
     }
 }
