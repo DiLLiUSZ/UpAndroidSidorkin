@@ -1,7 +1,10 @@
 package com.example.upsidorkin.data.service
 
+import com.example.upsidorkin.data.model.SignInRequest
+import com.example.upsidorkin.data.model.SignInResponse
 import com.example.upsidorkin.data.model.SignUpRequest
 import com.example.upsidorkin.data.model.SignUpResponse
+import com.example.upsidorkin.data.model.VerifyOtpRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Headers
@@ -12,7 +15,18 @@ const val API_KEY =
 
 interface UserManagementService {
 
+    // Регистрация
     @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("auth/v1/signup")
     suspend fun signUp(@Body signUpRequest: SignUpRequest): Response<SignUpResponse>
+
+    // Подтверждение кода из письма
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("auth/v1/verify")
+    suspend fun verifyOTP(@Body verifyOtpRequest: VerifyOtpRequest): Response<Any>
+
+    // Вход (Login)
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("auth/v1/token?grant_type=password")
+    suspend fun signIn(@Body signInRequest: SignInRequest): Response<SignInResponse>
 }

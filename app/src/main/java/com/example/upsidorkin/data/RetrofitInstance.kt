@@ -9,12 +9,13 @@ import java.net.Proxy
 import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
-
     const val SUPABASE_URL = "https://yurffzwikcwtcpikvkku.supabase.co/"
+
+
     private val proxy = Proxy(Proxy.Type.HTTP, InetSocketAddress("10.207.106.77", 3128))
 
     private val client = OkHttpClient.Builder()
-        .proxy(com.example.upsidorkin.data.RetrofitInstance.proxy)
+        .proxy(proxy)
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
