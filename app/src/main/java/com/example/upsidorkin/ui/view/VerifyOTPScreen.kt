@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,7 +15,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -27,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.upsidorkin.R // Убедитесь, что R класс импортирован для иконки
+import com.example.upsidorkin.R
 import com.example.upsidorkin.ui.theme.UpSidorkinTheme
 import com.example.upsidorkin.ui.viewModel.VerifyOTPViewModel
 
@@ -35,17 +33,18 @@ import com.example.upsidorkin.ui.viewModel.VerifyOTPViewModel
 fun VerifyOTPScreen(
     navController: NavHostController,
     email: String,
+    otpType: String = "signup", // "signup" или "recovery"
     viewModel: VerifyOTPViewModel = viewModel()
 ) {
-    // Храним код не просто как String, а как TextFieldValue, чтобы управлять курсором, если нужно
     var otpValue by remember { mutableStateOf(TextFieldValue("")) }
     val context = LocalContext.current
-    val otpLength = 6 // Длина кода
+    val otpLength = 6
 
     // Автоматическая отправка при вводе 6 цифр
     LaunchedEffect(otpValue.text) {
         if (otpValue.text.length == otpLength) {
-            viewModel.verifyOTP(email, otpValue.text, context, navController)
+            // Передаем otpType во ViewModel
+            viewModel.verifyOTP(email, otpValue.text, otpType, context, navController)
         }
     }
 
@@ -60,7 +59,7 @@ fun VerifyOTPScreen(
         ) {
             Spacer(modifier = Modifier.height(50.dp))
 
-            // Кнопка "Назад" (как на макете - квадратная рамка)
+            // Кнопка "Назад"
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -69,20 +68,18 @@ fun VerifyOTPScreen(
                     .clickable { navController.popBackStack() },
                 contentAlignment = Alignment.Center
             ) {
-
                 Icon(
-                    painter = painterResource(id = R.drawable.arrow),
+                    painter = painterResource(id = R.drawable.arrow), // Убедитесь, что ресурс есть
                     contentDescription = "Назад",
-                    tint = Color(0xFF555555) // Можно задать цвет иконки
+                    tint = Color(0xFF555555)
                 )
             }
-
 
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
                 text = "OTP Проверка",
-                fontSize = 32.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF333333),
                 textAlign = TextAlign.Center,
@@ -93,7 +90,7 @@ fun VerifyOTPScreen(
 
             Text(
                 text = "Пожалуйста, Проверьте Свою\nЭлектронную Почту, Чтобы Увидеть Код\nПодтверждения",
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 color = Color(0xFF7D7D7D),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -109,7 +106,7 @@ fun VerifyOTPScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Поле ввода OTP (кастомное)
+            // Поле ввода (ячейки)
             OtpInputField(
                 otpValue = otpValue,
                 onValueChange = {
@@ -122,7 +119,25 @@ fun VerifyOTPScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Таймер
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Отправить код повторно",
+                    fontSize = 12.sp,
+                    color = Color(0xFFB0B0B0),
+                    modifier = Modifier.clickable { /* Логика повтора */ }
+                )
 
+                Text(
+                    text = "00:30",
+                    fontSize = 12.sp,
+                    color = Color(0xFFB0B0B0)
+                )
+            }
         }
     }
 }
@@ -136,7 +151,6 @@ fun OtpInputField(
     Box(
         contentAlignment = Alignment.CenterStart
     ) {
-        // Скрытое текстовое поле, которое принимает ввод
         BasicTextField(
             value = otpValue,
             onValueChange = onValueChange,
@@ -148,7 +162,7 @@ fun OtpInputField(
                 ) {
                     repeat(length) { index ->
                         val char = if (index < otpValue.text.length) otpValue.text[index] else null
-                        val isFocused = index == otpValue.text.length // Активная ячейка - следующая за последней введенной
+                        val isFocused = index == otpValue.text.length
 
                         OtpCell(
                             char = char,
@@ -158,7 +172,6 @@ fun OtpInputField(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            // Делаем текст прозрачным, так как мы рисуем его сами в OtpCell
             textStyle = androidx.compose.ui.text.TextStyle(color = Color.Transparent)
         )
     }
@@ -169,14 +182,13 @@ fun OtpCell(
     char: Char?,
     isFocused: Boolean
 ) {
-    // Цвета из вашего запроса
-    val borderColor = if (isFocused) Color(0xFFFF5252) else Color(0xFFF7F7F7) // Красная рамка при фокусе
+    val borderColor = if (isFocused) Color(0xFFFF5252) else Color(0xFFF7F7F7)
     val backgroundColor = Color(0xFFF7F7F7)
 
     Box(
         modifier = Modifier
-            .width(48.dp) // Ширина ячейки
-            .height(60.dp) // Высота ячейки
+            .width(48.dp)
+            .height(60.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(backgroundColor)
             .border(
@@ -203,7 +215,8 @@ fun VerifyOTPScreenPreview() {
         val navController = rememberNavController()
         VerifyOTPScreen(
             navController = navController,
-            email = "test@example.com"
+            email = "test@example.com",
+            otpType = "recovery"
         )
     }
 }

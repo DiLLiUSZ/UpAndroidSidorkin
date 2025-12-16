@@ -11,11 +11,23 @@ import kotlinx.coroutines.launch
 
 class VerifyOTPViewModel : ViewModel() {
 
-    fun verifyOTP(email: String, token: String, context: Context, navController: NavController) {
+    // Обновленная сигнатура метода с параметром type
+    fun verifyOTP(
+        email: String,
+        token: String,
+        type: String, // <--- Новый параметр
+        context: Context,
+        navController: NavController
+    ) {
         viewModelScope.launch {
             try {
+                // Преобразуем наш внутренний тип в тип для API
+                // Supabase принимает "signup", "recovery", "invite" и т.д.
+                // Если мы передаем "recovery", то и отправляем "recovery"
+                val requestType = if (type == "recovery") "recovery" else "signup"
+
                 val request = VerifyOtpRequest(
-                    type = "signup",
+                    type = requestType,
                     email = email,
                     token = token
                 )
@@ -23,16 +35,21 @@ class VerifyOTPViewModel : ViewModel() {
                 val response = RetrofitInstance.userManagementService.verifyOTP(request)
 
                 if (response.isSuccessful) {
-                    Toast.makeText(context, "Email подтвержден!", Toast.LENGTH_SHORT).show()
-                    // Переход на Login, очищаем стек
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
+                    // Успех
+                    if (type == "recovery") {
+                        // Если это восстановление -> идем задавать новый пароль
+                        navController.navigate("new_password")
+                    } else {
+                        // Если регистрация -> идем логиниться
+                        navController.navigate("login") {
+                            popUpTo("register") { inclusive = true }
+                        }
                     }
                 } else {
-                    Toast.makeText(context, "Ошибка подтверждения", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Неверный код", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Ошибка сети: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

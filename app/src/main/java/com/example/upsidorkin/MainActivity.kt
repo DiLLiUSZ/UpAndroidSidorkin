@@ -1,23 +1,4 @@
-package com.example.upsidorkin
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.upsidorkin.ui.theme.UpSidorkinTheme
-import com.example.upsidorkin.ui.view.LoginScreen
-import com.example.upsidorkin.ui.view.RegisterScreen
-import com.example.upsidorkin.ui.view.VerifyOTPScreen
+// ... imports
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,30 +10,38 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "register",
+                        startDestination = "register", // Или "login", как вам удобнее
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        // 1. Экран регистрации
-                        composable("register") {
-                            RegisterScreen(navController = navController)
+                        // Существующие экраны...
+                        composable("register") { RegisterScreen(navController = navController) }
+                        composable("login") { LoginScreen(navController = navController) }
+                        composable("home") { Text("Дом") }
+
+                        // --- НОВЫЕ МАРШРУТЫ ---
+
+                        // 1. Экран "Забыл пароль"
+                        composable("forgot_password") {
+                            ForgotPasswordScreen(navController = navController)
                         }
 
-                        // 2. Экран OTP (принимает email)
-                        composable("verifyOTP/{email}") { backStackEntry ->
+                        // 2. Экран OTP. Мы добавили параметр `type`, чтобы знать, это регистрация или сброс пароля.
+                        // Маршрут: verifyOTP/{email}/{type}
+                        composable(
+                            "verifyOTP/{email}/{type}",
+                            arguments = listOf(
+                                navArgument("email") { type = NavType.StringType },
+                                navArgument("type") { type = NavType.StringType } // "signup" или "recovery"
+                            )
+                        ) { backStackEntry ->
                             val email = backStackEntry.arguments?.getString("email") ?: ""
-                            VerifyOTPScreen(navController = navController, email = email)
+                            val type = backStackEntry.arguments?.getString("type") ?: "signup"
+                            VerifyOTPScreen(navController = navController, email = email, otpType = type)
                         }
 
-                        // 3. Экран входа
-                        composable("login") {
-                            LoginScreen(navController = navController)
-                        }
-
-                        // 4. Домашний экран
-                        composable("home") {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("Главная страница. Вы успешно вошли!")
-                            }
+                        // 3. Экран "Новый пароль"
+                        composable("new_password") {
+                            NewPasswordScreen(navController = navController)
                         }
                     }
                 }
