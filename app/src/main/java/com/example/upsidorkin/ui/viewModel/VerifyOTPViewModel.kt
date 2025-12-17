@@ -11,19 +11,16 @@ import kotlinx.coroutines.launch
 
 class VerifyOTPViewModel : ViewModel() {
 
-    // Обновленная сигнатура метода с параметром type
+    // type: "signup" или "recovery"
     fun verifyOTP(
         email: String,
         token: String,
-        type: String, // <--- Новый параметр
+        type: String,
         context: Context,
         navController: NavController
     ) {
         viewModelScope.launch {
             try {
-                // Преобразуем наш внутренний тип в тип для API
-                // Supabase принимает "signup", "recovery", "invite" и т.д.
-                // Если мы передаем "recovery", то и отправляем "recovery"
                 val requestType = if (type == "recovery") "recovery" else "signup"
 
                 val request = VerifyOtpRequest(
@@ -35,12 +32,11 @@ class VerifyOTPViewModel : ViewModel() {
                 val response = RetrofitInstance.userManagementService.verifyOTP(request)
 
                 if (response.isSuccessful) {
-                    // Успех
                     if (type == "recovery") {
-                        // Если это восстановление -> идем задавать новый пароль
-                        navController.navigate("new_password")
+                        // После успешного ввода кода для восстановления → экран нового пароля
+                        navController.navigate("new_password/$email")
                     } else {
-                        // Если регистрация -> идем логиниться
+                        // После подтверждения регистрации → на логин
                         navController.navigate("login") {
                             popUpTo("register") { inclusive = true }
                         }
@@ -49,7 +45,7 @@ class VerifyOTPViewModel : ViewModel() {
                     Toast.makeText(context, "Неверный код", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Ошибка сети: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

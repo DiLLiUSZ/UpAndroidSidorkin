@@ -40,10 +40,8 @@ fun VerifyOTPScreen(
     val context = LocalContext.current
     val otpLength = 6
 
-    // Автоматическая отправка при вводе 6 цифр
     LaunchedEffect(otpValue.text) {
         if (otpValue.text.length == otpLength) {
-            // Передаем otpType во ViewModel
             viewModel.verifyOTP(email, otpValue.text, otpType, context, navController)
         }
     }
@@ -59,7 +57,6 @@ fun VerifyOTPScreen(
         ) {
             Spacer(modifier = Modifier.height(50.dp))
 
-            // Кнопка "Назад"
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -69,7 +66,7 @@ fun VerifyOTPScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.arrow), // Убедитесь, что ресурс есть
+                    painter = painterResource(id = R.drawable.arrow),
                     contentDescription = "Назад",
                     tint = Color(0xFF555555)
                 )
@@ -106,7 +103,6 @@ fun VerifyOTPScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Поле ввода (ячейки)
             OtpInputField(
                 otpValue = otpValue,
                 onValueChange = {
@@ -119,28 +115,11 @@ fun VerifyOTPScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Таймер
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Отправить код повторно",
-                    fontSize = 12.sp,
-                    color = Color(0xFFB0B0B0),
-                    modifier = Modifier.clickable { /* Логика повтора */ }
-                )
 
-                Text(
-                    text = "00:30",
-                    fontSize = 12.sp,
-                    color = Color(0xFFB0B0B0)
-                )
             }
         }
     }
-}
+
 
 @Composable
 fun OtpInputField(
@@ -164,10 +143,7 @@ fun OtpInputField(
                         val char = if (index < otpValue.text.length) otpValue.text[index] else null
                         val isFocused = index == otpValue.text.length
 
-                        OtpCell(
-                            char = char,
-                            isFocused = isFocused
-                        )
+                        OtpCell(char = char, isFocused = isFocused)
                     }
                 }
             },

@@ -3,16 +3,30 @@ package com.example.upsidorkin.ui.viewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.upsidorkin.data.RetrofitInstance
 import kotlinx.coroutines.launch
 
 class ForgotPasswordViewModel : ViewModel() {
     val showDialog = mutableStateOf(false)
+    val errorMessage = mutableStateOf<String?>(null)
 
     fun sendRecoveryEmail(email: String) {
         viewModelScope.launch {
-            // Вызов API: recoverPassword(mapOf("email" to email))
-            // Если успех -> showDialog.value = true
-            showDialog.value = true // Пока просто показываем диалог для теста UI
+            try {
+                errorMessage.value = null
+
+                val response = RetrofitInstance.userManagementService
+                    .recoverPassword(mapOf("email" to email))
+
+                if (response.isSuccessful) {
+                    // Письмо отправлено – показываем диалог "Проверьте email"
+                    showDialog.value = true
+                } else {
+                    errorMessage.value = "Ошибка: ${response.code()} ${response.message()}"
+                }
+            } catch (e: Exception) {
+                errorMessage.value = "Ошибка сети: ${e.message}"
+            }
         }
     }
 }

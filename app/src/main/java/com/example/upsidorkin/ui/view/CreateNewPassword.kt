@@ -16,17 +16,26 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.upsidorkin.R
+import com.example.upsidorkin.ui.viewModel.NewPasswordViewModel
 
 @Composable
-fun NewPasswordScreen(navController: NavController) {
+fun NewPasswordScreen(
+    navController: NavHostController,
+    email: String, // ВАЖНО: сюда передаём email из OTP‑экрана
+    viewModel: NewPasswordViewModel = viewModel()
+) {
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
+    val isValid = password.length >= 6 && password == confirmPassword
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
-        Column(modifier = Modifier.padding(24.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
             Spacer(modifier = Modifier.height(50.dp))
+
             // Кнопка Назад
             Box(
                 modifier = Modifier
@@ -36,12 +45,28 @@ fun NewPasswordScreen(navController: NavController) {
                     .clickable { navController.popBackStack() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(painter = painterResource(id = R.drawable.arrow), contentDescription = null, tint = Color.Black)
+                Icon(
+                    painter = painterResource(id = R.drawable.arrow),
+                    contentDescription = null,
+                    tint = Color.Black
+                )
             }
 
             Spacer(modifier = Modifier.height(30.dp))
-            Text("Задать Новый Пароль", fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-            Text("Установите Новый Пароль Для Входа В\nВашу Учетную Запись", fontSize = 14.sp, color = Color.Gray, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+            Text(
+                "Задать Новый Пароль",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                "Установите Новый Пароль Для Входа В\nВашу Учетную Запись",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(40.dp))
             Text("Пароль", fontWeight = FontWeight.Medium)
@@ -82,17 +107,25 @@ fun NewPasswordScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(30.dp))
             Button(
                 onClick = {
-                    // Здесь логика сохранения пароля (ViewModel.updatePassword)
-                    // После успеха -> на логин
-                    navController.navigate("login") {
-                        popUpTo("login") { inclusive = true }
-                    }
+                    viewModel.changePassword(email.trim(), password.trim(), navController)
                 },
+                enabled = isValid && !viewModel.isLoading.value,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF48B2E7))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF48B2E7),
+                    disabledContainerColor = Color(0xFF2B6B8B),
+                    contentColor = Color.White
+                )
             ) {
-                Text("Сохранить")
+                if (viewModel.isLoading.value) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                } else {
+                    Text("Сохранить")
+                }
             }
         }
     }

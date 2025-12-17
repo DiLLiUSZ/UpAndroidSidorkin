@@ -5,29 +5,31 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.upsidorkin.data.RetrofitInstance
-import com.example.upsidorkin.data.model.SignUpRequest
+import com.example.upsidorkin.data.model.ChangePasswordRequest
 import kotlinx.coroutines.launch
 
-class SignUpViewModel : ViewModel() {
+class NewPasswordViewModel : ViewModel() {
+
     val isLoading = mutableStateOf(false)
     val errorMessage = mutableStateOf<String?>(null)
 
-    fun signUp(email: String, password: String, navController: NavController) {
+    fun changePassword(email: String, newPassword: String, navController: NavController) {
         viewModelScope.launch {
             try {
                 isLoading.value = true
                 errorMessage.value = null
 
-                val response = RetrofitInstance.userManagementService
-                    .signUp(SignUpRequest(email, password))
+                val body = ChangePasswordRequest(email, newPassword)
+                val response = RetrofitInstance.userManagementService.changePassword(body)
 
                 if (response.isSuccessful) {
-
-                    navController.navigate("verifyOTP/$email/signup")
+                    // Пароль успешно сменён – отправляем на экран входа
+                    navController.navigate("login") {
+                        popUpTo("login") { inclusive = true }
+                    }
                 } else {
                     errorMessage.value = "Ошибка: ${response.code()}"
                 }
-
             } catch (e: Exception) {
                 errorMessage.value = "Ошибка сети: ${e.message}"
             } finally {

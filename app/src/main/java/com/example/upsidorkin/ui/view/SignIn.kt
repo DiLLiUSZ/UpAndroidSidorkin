@@ -153,8 +153,11 @@ fun LoginScreen(
                 color = Color(0xFF9E9E9E),
                 modifier = Modifier
                     .align(Alignment.End)
-                    .clickable { /* TODO */ }
+                    .clickable {
+                        navController.navigate("forgot_password")
+                    }
             )
+
 
             Spacer(modifier = Modifier.height(28.dp))
 
