@@ -18,7 +18,11 @@ import com.example.upsidorkin.ui.theme.UpSidorkinTheme
 import com.example.upsidorkin.ui.view.ForgotPasswordScreen
 import com.example.upsidorkin.ui.view.LoginScreen
 import com.example.upsidorkin.ui.view.NewPasswordScreen
+import com.example.upsidorkin.ui.view.Onboard1Screen
+import com.example.upsidorkin.ui.view.Onboard2Screen
+import com.example.upsidorkin.ui.view.Onboard3Screen
 import com.example.upsidorkin.ui.view.RegisterScreen
+import com.example.upsidorkin.ui.view.SplashScreen
 import com.example.upsidorkin.ui.view.VerifyOTPScreen
 
 class MainActivity : ComponentActivity() {
@@ -28,13 +32,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             UpSidorkinTheme {
                 val navController = rememberNavController()
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "register", // или "login"
+                        startDestination = "splash",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        // Существующие экраны
+                        // Splash
+                        composable("splash") {
+                            SplashScreen(navController = navController)
+                        }
+
+                        // Onboarding 1–3
+                        composable("onboard1") {
+                            Onboard1Screen(navController = navController)
+                        }
+                        composable("onboard2") {
+                            Onboard2Screen(navController = navController)
+                        }
+                        composable("onboard3") {
+                            Onboard3Screen(navController = navController)
+                        }
+
+                        // Регистрация / Логин / Дом
                         composable("register") {
                             RegisterScreen(navController = navController)
                         }
@@ -45,17 +66,17 @@ class MainActivity : ComponentActivity() {
                             Text("Дом")
                         }
 
-                        // 1. Экран "Забыл пароль"
+                        // Забыл пароль
                         composable("forgot_password") {
                             ForgotPasswordScreen(navController = navController)
                         }
 
-                        // 2. Экран OTP: verifyOTP/{email}/{type}
+                        // OTP: verifyOTP/{email}/{type}  (type = signup / recovery)
                         composable(
                             route = "verifyOTP/{email}/{type}",
                             arguments = listOf(
                                 navArgument("email") { type = NavType.StringType },
-                                navArgument("type") { type = NavType.StringType } // "signup" или "recovery"
+                                navArgument("type") { type = NavType.StringType }
                             )
                         ) { backStackEntry ->
                             val email = backStackEntry.arguments?.getString("email") ?: ""
@@ -67,7 +88,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 3. Экран "Новый пароль"
+                        // Новый пароль: new_password/{email}
                         composable(
                             route = "new_password/{email}",
                             arguments = listOf(
@@ -75,9 +96,11 @@ class MainActivity : ComponentActivity() {
                             )
                         ) { backStackEntry ->
                             val email = backStackEntry.arguments?.getString("email") ?: ""
-                            NewPasswordScreen(navController = navController, email = email)
+                            NewPasswordScreen(
+                                navController = navController,
+                                email = email
+                            )
                         }
-
                     }
                 }
             }
