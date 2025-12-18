@@ -41,7 +41,18 @@ class MainActivity : ComponentActivity() {
                         composable("register") { RegisterScreen(navController = navController) }
 
                         composable("home") { HomeScreen(navController = navController) }
-                        composable("profile") { ProfileScreen(navController = navController) }
+                        composable("profile") {
+
+                            val fakeUserId = "9354f7ad-ff76-4dba-9568-8193a699480f"
+                            val fakeAccessToken = "FAKE_TOKEN"
+
+                            ProfileScreen(
+                                navController = navController,
+                                userId = fakeUserId,
+                                accessToken = fakeAccessToken
+                            )
+                        }
+
 
                         composable("forgot_password") {
                             ForgotPasswordScreen(navController)
