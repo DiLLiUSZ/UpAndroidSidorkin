@@ -1,5 +1,6 @@
 package com.example.upsidorkin.ui.view
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,16 +21,82 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.upsidorkin.R
 
+@SuppressLint("Range")
 @Composable
 fun Onboard1Screen(navController: NavHostController) {
-    OnboardBase(
-        imageRes = R.drawable.onboard1,  // картинка кроссовка
-        title = "ДОБРО\nПОЖАЛОВАТЬ",
-        subtitle = "",
-        buttonText = "Начать",
-        onButtonClick = { navController.navigate("onboard2") },
-        indicatorIndex = 0
-    )
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFF48B2E7)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 32.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End // прижимаем картинку вправо
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.onboard1),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth(1.15f)        // чуть шире экрана
+                        .height(320.dp)
+                        .offset(x = 20.dp, y = (-20).dp) // небольшой сдвиг вправо и вверх
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "ДОБРО\nПОЖАЛОВАТЬ",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    repeat(3) { index ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .width(if (index == 0) 24.dp else 8.dp)
+                                .height(6.dp)
+                                .background(
+                                    color = if (index == 0) Color.White else Color(0x55FFFFFF),
+                                    shape = RoundedCornerShape(3.dp)
+                                )
+                        )
+                    }
+                }
+            }
+
+            Button(
+                onClick = { navController.navigate("onboard2") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF48B2E7)
+                )
+            ) {
+                Text(text = "Начать", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            }
+        }
+    }
 }
 
 @Composable
@@ -56,6 +123,7 @@ fun Onboard3Screen(navController: NavHostController) {
     )
 }
 
+@SuppressLint("Range")
 @Composable
 private fun OnboardBase(
     imageRes: Int,
@@ -75,10 +143,8 @@ private fun OnboardBase(
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Верх – просто пустое пространство или статусбар
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Середина – кроссовок и текст
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -87,21 +153,23 @@ private fun OnboardBase(
                     painter = painterResource(id = imageRes),
                     contentDescription = null,
                     modifier = Modifier
-                        .height(220.dp)
+                        .fillMaxWidth(1.25f)
+                        .height(340.dp)
+                        .offset(y = (-40).dp)
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = title,
-                    fontSize = 24.sp,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
 
                 if (subtitle.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = subtitle,
                         fontSize = 14.sp,
@@ -110,9 +178,8 @@ private fun OnboardBase(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Индикаторы страниц (3 точки)
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
@@ -132,7 +199,6 @@ private fun OnboardBase(
                 }
             }
 
-            // Кнопка снизу
             Button(
                 onClick = onButtonClick,
                 modifier = Modifier
