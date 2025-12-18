@@ -9,6 +9,7 @@ import com.example.upsidorkin.data.model.SignInRequest
 import kotlinx.coroutines.launch
 
 class SignInViewModel : ViewModel() {
+
     var showDialog = mutableStateOf(false)
     var dialogText = mutableStateOf("")
 
@@ -17,7 +18,7 @@ class SignInViewModel : ViewModel() {
             try {
                 val response = RetrofitInstance.userManagementService.signIn(signInRequest)
                 if (response.isSuccessful) {
-                    // Успех -> Домой
+                    // успешная авторизация -> переход на Home
                     navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
                     }

@@ -2,254 +2,267 @@ package com.example.upsidorkin.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.upsidorkin.R
 
+data class Product(
+    val id: Int,
+    val name: String,
+    val price: String,
+    val imageRes: Int
+)
+
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF4F6F9)
-    ) {
+    val scrollState = rememberScrollState()
+
+    val categories = listOf("Все", "Outdoor", "Tennis")
+    var selectedCategory by remember { mutableStateOf("Все") }
+
+    val products = listOf(
+        Product(1, "Nike Air Max", "₽752.00", R.drawable.img_shoe_blue),
+        Product(2, "Nike Air Max", "₽752.00", R.drawable.img_shoe_blue)
+    )
+
+    Scaffold(
+        bottomBar = { HomeBottomBar() },
+        containerColor = Color(0xFFF5F7FA)
+    ) { innerPadding ->
         Column(
             modifier = Modifier
+                .padding(innerPadding)
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .background(Color(0xFFF5F7FA))
+                .verticalScroll(scrollState)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
-
-            HomeTopBar()
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SearchSection()
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CategoriesSection()
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PopularSection()
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PromoSection()
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            BottomNavBar()
-        }
-    }
-}
-
-@Composable
-private fun HomeTopBar() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp, bottom = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+            // Заголовок
             Text(
-                text = "Главная",
-                fontSize = 22.sp,
+                text = stringResource(id = R.string.home_title),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF333333),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Поиск + фильтр
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SearchBox(
+                    hint = stringResource(id = R.string.search_hint),
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF48B2E7))
+                        .clickable { },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_filter),
+                        contentDescription = "Filter",
+                        tint = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Категории
+            Text(
+                text = stringResource(id = R.string.categories),
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFF333333)
             )
-        }
-    }
-}
 
-@Composable
-private fun SearchSection() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Card(
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(0.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = null,
-                    tint = Color(0xFFB0B0B0)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Поиск",
-                    fontSize = 14.sp,
-                    color = Color(0xFFB0B0B0)
-                )
+                items(categories) { category ->
+                    val isSelected = category == selectedCategory
+                    CategoryChip(
+                        title = category,
+                        selected = isSelected,
+                        onClick = { selectedCategory = category }
+                    )
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Card(
-            modifier = Modifier
-                .size(48.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF48B2E7)),
-            elevation = CardDefaults.cardElevation(0.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_filter),
-                    contentDescription = null,
-                    tint = Color.White
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CategoriesSection() {
-    Text(
-        text = "Категории",
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Medium,
-        color = Color(0xFF333333),
-        modifier = Modifier.padding(vertical = 8.dp)
-    )
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        CategoryChip(title = "Все", selected = true)
-        CategoryChip(title = "Outdoor", selected = false)
-        CategoryChip(title = "Tennis", selected = false)
-    }
-}
-
-@Composable
-private fun CategoryChip(title: String, selected: Boolean) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (selected) Color.White else Color(0xFFF4F6F9)
-        ),
-        elevation = CardDefaults.cardElevation(if (selected) 2.dp else 0.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = title,
-                fontSize = 13.sp,
-                color = if (selected) Color(0xFF333333) else Color(0xFF9E9E9E)
-            )
-        }
-    }
-}
-
-@Composable
-private fun PopularSection() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "Популярное",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF333333)
-        )
-        Text(
-            text = "Все",
-            fontSize = 12.sp,
-            color = Color(0xFF48B2E7)
-        )
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        ProductCard()
-        ProductCard()
-    }
-}
-
-@Composable
-private fun ProductCard() {
-    Card(
-        modifier = Modifier
-
-            .height(190.dp),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(1.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp)
-        ) {
+            // Популярное
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.popular),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF333333)
+                )
+                Text(
+                    text = stringResource(id = R.string.see_all),
+                    fontSize = 14.sp,
+                    color = Color(0xFF48B2E7)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(products) { product ->
+                    ProductCard(product = product)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Акции
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.promo),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF333333)
+                )
+                Text(
+                    text = stringResource(id = R.string.see_all),
+                    fontSize = 14.sp,
+                    color = Color(0xFF48B2E7)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            PromoBanner()
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+    }
+}
+
+@Composable
+private fun SearchBox(hint: String, modifier: Modifier = Modifier) {
+    OutlinedTextField(
+        value = "",
+        onValueChange = {},
+        leadingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search",
+                tint = Color(0xFFB0B0B0)
+            )
+        },
+        placeholder = {
+            Text(text = hint, color = Color(0xFFB0B0B0))
+        },
+        singleLine = true,
+        modifier = modifier
+            .height(48.dp)
+            .clip(RoundedCornerShape(16.dp)),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        )
+    )
+}
+
+@Composable
+private fun CategoryChip(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .height(34.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) Color.White else Color(0xFFE8EDF3))
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = title,
+            fontSize = 14.sp,
+            color = if (selected) Color(0xFF333333) else Color(0xFF828B99)
+        )
+    }
+}
+
+@Composable
+private fun ProductCard(product: Product) {
+    Box(
+        modifier = Modifier
+            .width(180.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .padding(12.dp)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.heart),
-                    contentDescription = null,
+                    painter = painterResource(id = R.drawable.ic_favorite_border),
+                    contentDescription = "Favorite",
                     tint = Color(0xFFB0B0B0)
                 )
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             Image(
-                painter = painterResource(id = R.drawable.nike),
-                contentDescription = null,
+                painter = painterResource(id = product.imageRes),
+                contentDescription = product.name,
                 modifier = Modifier
-                    .height(70.dp)
                     .fillMaxWidth()
+                    .height(80.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -257,39 +270,43 @@ private fun ProductCard() {
             Text(
                 text = "BEST SELLER",
                 fontSize = 10.sp,
-                color = Color(0xFF48B2E7)
+                color = Color(0xFF48B2E7),
+                fontWeight = FontWeight.Medium
             )
+
             Text(
-                text = "Nike Air Max",
+                text = product.name,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF333333)
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF333333),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "₽752.00",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
+                    text = product.price,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF333333)
                 )
-
                 Box(
                     modifier = Modifier
-                        .size(26.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF48B2E7)),
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF48B2E7))
+                        .clickable { },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.plus),
-                        contentDescription = null,
+                        painter = painterResource(id = R.drawable.ic_cart),
+                        contentDescription = "Add to cart",
                         tint = Color.White
                     )
                 }
@@ -299,118 +316,81 @@ private fun ProductCard() {
 }
 
 @Composable
-private fun PromoSection() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "Акции",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF333333)
-        )
-        Text(
-            text = "Все",
-            fontSize = 12.sp,
-            color = Color(0xFF48B2E7)
-        )
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Card(
+private fun PromoBanner() {
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(1.dp)
+            .height(120.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.White)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.img_promo_banner),
+            contentDescription = "Promo",
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+private fun HomeBottomBar() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(Color.White),
+        contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
+            // Дом
+            Icon(
+                painter = painterResource(id = R.drawable.ic_home),
+                contentDescription = "Home",
+                tint = Color(0xFFB0B0B0)
+            )
+
+            // Избранное
+            Icon(
+                painter = painterResource(id = R.drawable.ic_heart),
+                contentDescription = "Favorites",
+                tint = Color(0xFFB0B0B0)
+            )
+
+            // Центр — корзина
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF48B2E7)),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Summer Sale",
-                    fontSize = 12.sp,
-                    color = Color(0xFF9E9E9E)
-                )
-                Text(
-                    text = "15% OFF",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF48B2E7)
+                Icon(
+                    painter = painterResource(id = R.drawable.bag),
+                    contentDescription = "Cart",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)   // было ~32, теперь меньше
                 )
             }
 
-            Image(
-                painter = painterResource(id = R.drawable.promo),
-                contentDescription = null,
-                modifier = Modifier
-                    .height(80.dp)
-                    .weight(1f)
-            )
-        }
-    }
-}
-
-@Composable
-private fun BottomNavBar() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconBottomNav(
-            iconId = R.drawable.home,
-            selected = false
-        )
-        IconBottomNav(
-            iconId = R.drawable.heart,
-            selected = false
-        )
-        IconBottomNav(
-            iconId = R.drawable.home,
-            selected = true // центральная синяя
-        )
-        IconBottomNav(
-            iconId = R.drawable.home,
-            selected = false
-        )
-    }
-}
-
-@Composable
-private fun IconBottomNav(iconId: Int, selected: Boolean) {
-    if (selected) {
-        Box(
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF48B2E7)),
-            contentAlignment = Alignment.Center
-        ) {
+            // Заказы (машина)
             Icon(
-                painter = painterResource(id = iconId),
-                contentDescription = null,
-                tint = Color.White
+                painter = painterResource(id = R.drawable.ic_truck),
+                contentDescription = "Orders",
+                tint = Color(0xFFB0B0B0)
+            )
+
+            // Профиль
+            Icon(
+                painter = painterResource(id = R.drawable.ic_profile),
+                contentDescription = "Profile",
+                tint = Color(0xFFB0B0B0)
             )
         }
-    } else {
-        Icon(
-            painter = painterResource(id = iconId),
-            contentDescription = null,
-            tint = Color(0xFFB0B0B0),
-            modifier = Modifier.size(24.dp)
-        )
     }
 }
