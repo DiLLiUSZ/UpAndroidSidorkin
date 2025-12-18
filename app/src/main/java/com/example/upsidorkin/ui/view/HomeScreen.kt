@@ -10,11 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -60,7 +57,6 @@ fun HomeScreen(navController: NavHostController) {
                 .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Заголовок
             Text(
                 text = stringResource(id = R.string.home_title),
                 fontSize = 28.sp,
@@ -73,7 +69,6 @@ fun HomeScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Поиск + фильтр
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -100,7 +95,6 @@ fun HomeScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Категории
             Text(
                 text = stringResource(id = R.string.categories),
                 fontSize = 16.sp,
@@ -125,7 +119,6 @@ fun HomeScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Популярное
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -156,7 +149,6 @@ fun HomeScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Акции
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -185,9 +177,11 @@ fun HomeScreen(navController: NavHostController) {
 
 @Composable
 private fun SearchBox(hint: String, modifier: Modifier = Modifier) {
+    var value by remember { mutableStateOf(TextFieldValue("")) }
+
     OutlinedTextField(
-        value = "",
-        onValueChange = {},
+        value = value,
+        onValueChange = { value = it },
         leadingIcon = {
             Icon(
                 painter = painterResource(id = R.drawable.ic_search),
@@ -331,6 +325,8 @@ private fun PromoBanner() {
         )
     }
 }
+
+
 @Composable
 fun BottomBar(navController: NavHostController, currentRoute: String) {
     val activeColor = Color(0xFF48B2E7)
@@ -356,11 +352,16 @@ fun BottomBar(navController: NavHostController, currentRoute: String) {
                 contentDescription = "Home",
                 tint = if (currentRoute == "home") activeColor else inactiveColor,
                 modifier = Modifier.clickable {
-                    if (currentRoute != "home") navController.navigate("home")
+                    if (currentRoute != "home") {
+                        navController.navigate("home") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
                 }
             )
 
-            // Избранное (пока неактивно)
+            // Избранное (заглушка)
             Icon(
                 painter = painterResource(id = R.drawable.ic_heart),
                 contentDescription = "Favorites",
@@ -396,72 +397,13 @@ fun BottomBar(navController: NavHostController, currentRoute: String) {
                 contentDescription = "Profile",
                 tint = if (currentRoute == "profile") activeColor else inactiveColor,
                 modifier = Modifier.clickable {
-                    if (currentRoute != "profile") navController.navigate("profile")
+                    if (currentRoute != "profile") {
+                        navController.navigate("profile") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
                 }
-            )
-        }
-    }
-}
-
-
-@Composable
-private fun HomeBottomBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Дом
-            Icon(
-                painter = painterResource(id = R.drawable.ic_home),
-                contentDescription = "Home",
-                tint = Color(0xFFB0B0B0)
-            )
-
-            // Избранное
-            Icon(
-                painter = painterResource(id = R.drawable.ic_heart),
-                contentDescription = "Favorites",
-                tint = Color(0xFFB0B0B0)
-            )
-
-            // Центр — корзина
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF48B2E7)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.bag),
-                    contentDescription = "Cart",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)   // было ~32, теперь меньше
-                )
-            }
-
-            // Заказы (машина)
-            Icon(
-                painter = painterResource(id = R.drawable.ic_truck),
-                contentDescription = "Orders",
-                tint = Color(0xFFB0B0B0)
-            )
-
-            // Профиль
-            Icon(
-                painter = painterResource(id = R.drawable.ic_profile),
-                contentDescription = "Profile",
-                tint = Color(0xFFB0B0B0)
             )
         }
     }

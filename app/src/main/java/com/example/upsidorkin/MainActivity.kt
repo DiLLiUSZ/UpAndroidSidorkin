@@ -19,12 +19,12 @@ import com.example.upsidorkin.ui.view.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()          // 1. включаем системный сплэш
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-            UpSidorkinTheme {          // 2. compose‑тема
+            UpSidorkinTheme {
                 val navController = rememberNavController()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -36,9 +36,10 @@ class MainActivity : ComponentActivity() {
                         composable("onboard1") { Onboard1Screen(navController) }
                         composable("onboard2") { Onboard2Screen(navController) }
                         composable("onboard3") { Onboard3Screen(navController) }
+
                         composable("login") { LoginScreen(navController = navController) }
                         composable("register") { RegisterScreen(navController = navController) }
-                        composable("home") { HomeScreen(navController) }
+
                         composable("home") { HomeScreen(navController = navController) }
                         composable("profile") { ProfileScreen(navController = navController) }
 
