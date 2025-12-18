@@ -49,7 +49,7 @@ fun HomeScreen(navController: NavHostController) {
     )
 
     Scaffold(
-        bottomBar = { HomeBottomBar() },
+        bottomBar = { BottomBar(navController = navController, currentRoute = "home") },
         containerColor = Color(0xFFF5F7FA)
     ) { innerPadding ->
         Column(
@@ -331,6 +331,78 @@ private fun PromoBanner() {
         )
     }
 }
+@Composable
+fun BottomBar(navController: NavHostController, currentRoute: String) {
+    val activeColor = Color(0xFF48B2E7)
+    val inactiveColor = Color(0xFFB0B0B0)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Дом
+            Icon(
+                painter = painterResource(id = R.drawable.ic_home),
+                contentDescription = "Home",
+                tint = if (currentRoute == "home") activeColor else inactiveColor,
+                modifier = Modifier.clickable {
+                    if (currentRoute != "home") navController.navigate("home")
+                }
+            )
+
+            // Избранное (пока неактивно)
+            Icon(
+                painter = painterResource(id = R.drawable.ic_heart),
+                contentDescription = "Favorites",
+                tint = inactiveColor
+            )
+
+            // Центр — синяя кнопка с сумкой
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(activeColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.bag),
+                    contentDescription = "Bag",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            // Заказы
+            Icon(
+                painter = painterResource(id = R.drawable.ic_truck),
+                contentDescription = "Orders",
+                tint = inactiveColor
+            )
+
+            // Профиль
+            Icon(
+                painter = painterResource(id = R.drawable.ic_profile),
+                contentDescription = "Profile",
+                tint = if (currentRoute == "profile") activeColor else inactiveColor,
+                modifier = Modifier.clickable {
+                    if (currentRoute != "profile") navController.navigate("profile")
+                }
+            )
+        }
+    }
+}
+
 
 @Composable
 private fun HomeBottomBar() {
