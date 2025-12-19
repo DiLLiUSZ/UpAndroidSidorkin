@@ -1,5 +1,6 @@
 package com.example.upsidorkin.ui.view
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.navigation.NavHostController
 import com.example.upsidorkin.R
 import com.example.upsidorkin.data.RetrofitInstance
 import com.example.upsidorkin.data.UserSession
+import com.example.upsidorkin.data.model.FavouriteRequest
 import com.example.upsidorkin.data.service.ProductDto
 import kotlinx.coroutines.launch
 
@@ -35,7 +37,7 @@ data class CatalogCategory(
 )
 
 data class CatalogProduct(
-    val id: String,              // uuid из products
+    val id: String,
     val title: String,
     val price: Double,
     val categoryId: String?,
@@ -66,9 +68,13 @@ fun CatalogScreen(
     var selectedCategory by remember { mutableStateOf(initialCategoryTitle) }
     var isLoading by remember { mutableStateOf(false) }
 
-    // 1. грузим товары и избранное
+    Log.d("CATALOG", "sessionUserId=$sessionUserId token=${token?.take(10)}")
+
     LaunchedEffect(sessionUserId, token) {
-        if (token == null || sessionUserId == null) return@LaunchedEffect
+        if (token == null || sessionUserId == null) {
+            Log.e("CATALOG", "No token or userId, skip loading")
+            return@LaunchedEffect
+        }
         isLoading = true
         try {
             val service = RetrofitInstance.userManagementService
@@ -93,14 +99,18 @@ fun CatalogScreen(
                     isFavorite = favSet.contains(p.id)
                 )
             }
+        } catch (e: Exception) {
+            Log.e("CATALOG", "load error", e)
         } finally {
             isLoading = false
         }
     }
 
-    // 2. отправляем изменение избранного в Supabase
     fun toggleFavourite(product: CatalogProduct, isFav: Boolean) {
-        if (sessionUserId == null || token == null) return
+        if (sessionUserId == null || token == null) {
+            Log.e("FAV", "No token/userId")
+            return
+        }
         scope.launch {
             try {
                 val service = RetrofitInstance.userManagementService
@@ -108,32 +118,32 @@ fun CatalogScreen(
                 if (isFav) {
                     val resp = service.addFavourite(
                         authHeader = "Bearer $token",
-                        body = mapOf(
-                            "user_id" to sessionUserId,
-                            "product_id" to product.id
+                        body = FavouriteRequest(
+                            user_id = sessionUserId,
+                            product_id = product.id
                         )
                     )
+                    Log.d("FAV", "addFavourite code=${resp.code()} err=${resp.errorBody()?.string()}")
                     if (!resp.isSuccessful) {
-                        // если ошибка — откат локально
                         allProducts = allProducts.map {
                             if (it.id == product.id) it.copy(isFavorite = false) else it
                         }
                         return@launch
                     }
                 } else {
-                    service.deleteFavourite(
+                    val resp = service.deleteFavourite(
                         authHeader = "Bearer $token",
                         userIdFilter = "eq.$sessionUserId",
                         productIdFilter = "eq.${product.id}"
                     )
+                    Log.d("FAV", "deleteFavourite code=${resp.code()} err=${resp.errorBody()?.string()}")
                 }
 
-                // обновляем локальный список
                 allProducts = allProducts.map {
                     if (it.id == product.id) it.copy(isFavorite = isFav) else it
                 }
-            } catch (_: Exception) {
-                // при ошибке тоже откатываем
+            } catch (e: Exception) {
+                Log.e("FAV", "toggle error", e)
                 allProducts = allProducts.map {
                     if (it.id == product.id) it.copy(isFavorite = !isFav) else it
                 }

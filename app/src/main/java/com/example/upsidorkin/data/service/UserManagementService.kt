@@ -38,7 +38,8 @@ interface UserManagementService {
 
     // ---------- AUTH ----------
 
-    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @Headers("apikey: $API_KEY", "Content-Type: " +
+            "application/json")
     @POST("auth/v1/signup")
     suspend fun signUp(@Body signUpRequest: SignUpRequest): Response<SignUpResponse>
 
@@ -64,7 +65,7 @@ interface UserManagementService {
     @GET("rest/v1/profiles")
     suspend fun getProfile(
         @Header("Authorization") authHeader: String,
-        @Query("user_id") userIdFilter: String,        // "eq.<uuid>"
+        @Query("user_id") userIdFilter: String, // "eq.<uuid>"
         @Query("select") select: String = "*"
     ): List<ProfileDto>
 
@@ -91,22 +92,22 @@ interface UserManagementService {
     @GET("rest/v1/favourite")
     suspend fun getFavourites(
         @Header("Authorization") authHeader: String,
-        @Query("user_id") userIdFilter: String,        // "eq.<uuid>"
-        @Query("select") select: String = "id,product_id"
+        @Query("user_id") userIdFilter: String, // "eq.<uuid>"
+        @Query("select") select: String = "id,product_id,user_id"
     ): List<FavouriteDto>
 
     @Headers("apikey: $API_KEY", "Content-Type: application/json")
     @POST("rest/v1/favourite")
     suspend fun addFavourite(
         @Header("Authorization") authHeader: String,
-        @Body body: Map<String, Any?>                  // product_id, user_id
+        @Body body: FavouriteRequest
     ): Response<Unit>
 
     @Headers("apikey: $API_KEY")
     @DELETE("rest/v1/favourite")
     suspend fun deleteFavourite(
         @Header("Authorization") authHeader: String,
-        @Query("user_id") userIdFilter: String,        // "eq.<uuid>"
-        @Query("product_id") productIdFilter: String   // "eq.<uuid>"
+        @Query("user_id") userIdFilter: String, // "eq.<uuid>"
+        @Query("product_id") productIdFilter: String // "eq.<uuid>"
     ): Response<Unit>
 }
