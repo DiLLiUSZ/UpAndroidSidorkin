@@ -43,6 +43,25 @@ class MainActivity : ComponentActivity() {
 
                         composable("home") { HomeScreen(navController = navController) }
 
+                        composable(
+                            route = "catalog/{category}",
+                            arguments = listOf(
+                                navArgument("category") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val category =
+                                backStackEntry.arguments?.getString("category") ?: "Outdoor"
+                            CatalogScreen(
+                                navController = navController,
+                                initialCategoryTitle = category
+                            )
+                        }
+
+                        // экран избранного
+                        composable("favorite") {
+                            FavoriteScreen(navController = navController)
+                        }
+
                         composable("profile") {
                             val userId = UserSession.userId
                             val accessToken = UserSession.accessToken
@@ -54,7 +73,6 @@ class MainActivity : ComponentActivity() {
                                     accessToken = accessToken
                                 )
                             } else {
-                                // если сессии нет, отправляем на логин
                                 LoginScreen(navController = navController)
                             }
                         }

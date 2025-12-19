@@ -7,7 +7,8 @@ import retrofit2.http.*
 const val API_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1cmZmendpa2N3dGNwaWt2a2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNjA3NTIsImV4cCI6MjA3NDgzNjc1Mn0.nfUxFx21J5MYGjNJdujY_2wU_BFsqeUQr6-qfTBKzAI"
 
-// DTO для таблицы profiles
+// -------- DTO --------
+
 data class ProfileDto(
     val id: String?,
     val user_id: String?,
@@ -16,6 +17,21 @@ data class ProfileDto(
     val lastname: String?,
     val address: String?,
     val phone: String?
+)
+
+data class FavouriteDto(
+    val id: String?,
+    val product_id: String?,
+    val user_id: String?
+)
+
+data class ProductDto(
+    val id: String,
+    val title: String,
+    val category_id: String?,
+    val cost: Double,
+    val description: String,
+    val is_best_seller: Boolean?
 )
 
 interface UserManagementService {
@@ -42,13 +58,13 @@ interface UserManagementService {
     @POST("change-password")
     suspend fun changePassword(@Body body: ChangePasswordRequest): Response<Any>
 
-    // ---------- PROFILES (REST) ----------
+    // ---------- PROFILES ----------
 
     @Headers("apikey: $API_KEY")
     @GET("rest/v1/profiles")
     suspend fun getProfile(
-        @Header("Authorization") authHeader: String,   // Bearer <token>
-        @Query("user_id") userIdFilter: String,        // eq.<uuid>
+        @Header("Authorization") authHeader: String,
+        @Query("user_id") userIdFilter: String,        // "eq.<uuid>"
         @Query("select") select: String = "*"
     ): List<ProfileDto>
 
@@ -58,5 +74,39 @@ interface UserManagementService {
         @Header("Authorization") authHeader: String,
         @Query("user_id") userIdFilter: String,
         @Body body: Map<String, Any?>
+    ): Response<Unit>
+
+    // ---------- PRODUCTS ----------
+
+    @Headers("apikey: $API_KEY")
+    @GET("rest/v1/products")
+    suspend fun getProducts(
+        @Header("Authorization") authHeader: String,
+        @Query("select") select: String = "*"
+    ): List<ProductDto>
+
+    // ---------- FAVOURITE ----------
+
+    @Headers("apikey: $API_KEY")
+    @GET("rest/v1/favourite")
+    suspend fun getFavourites(
+        @Header("Authorization") authHeader: String,
+        @Query("user_id") userIdFilter: String,        // "eq.<uuid>"
+        @Query("select") select: String = "id,product_id"
+    ): List<FavouriteDto>
+
+    @Headers("apikey: $API_KEY", "Content-Type: application/json")
+    @POST("rest/v1/favourite")
+    suspend fun addFavourite(
+        @Header("Authorization") authHeader: String,
+        @Body body: Map<String, Any?>                  // product_id, user_id
+    ): Response<Unit>
+
+    @Headers("apikey: $API_KEY")
+    @DELETE("rest/v1/favourite")
+    suspend fun deleteFavourite(
+        @Header("Authorization") authHeader: String,
+        @Query("user_id") userIdFilter: String,        // "eq.<uuid>"
+        @Query("product_id") productIdFilter: String   // "eq.<uuid>"
     ): Response<Unit>
 }

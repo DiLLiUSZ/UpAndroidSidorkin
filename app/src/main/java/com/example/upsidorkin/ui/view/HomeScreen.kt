@@ -112,7 +112,11 @@ fun HomeScreen(navController: NavHostController) {
                     CategoryChip(
                         title = category,
                         selected = isSelected,
-                        onClick = { selectedCategory = category }
+                        onClick = {
+                            selectedCategory = category
+                            // переход на каталог с выбранной категорией
+                            navController.navigate("catalog/$category")
+                        }
                     )
                 }
             }
@@ -326,7 +330,6 @@ private fun PromoBanner() {
     }
 }
 
-
 @Composable
 fun BottomBar(navController: NavHostController, currentRoute: String) {
     val activeColor = Color(0xFF48B2E7)
@@ -361,14 +364,22 @@ fun BottomBar(navController: NavHostController, currentRoute: String) {
                 }
             )
 
-            // Избранное (заглушка)
+
             Icon(
                 painter = painterResource(id = R.drawable.ic_heart),
                 contentDescription = "Favorites",
-                tint = inactiveColor
+                tint = if (currentRoute == "favorite") activeColor else inactiveColor,
+                modifier = Modifier.clickable {
+                    if (currentRoute != "favorite") {
+                        navController.navigate("favorite") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                }
             )
 
-            // Центр — синяя кнопка с сумкой
+
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -384,7 +395,7 @@ fun BottomBar(navController: NavHostController, currentRoute: String) {
                 )
             }
 
-            // Заказы
+
             Icon(
                 painter = painterResource(id = R.drawable.ic_truck),
                 contentDescription = "Orders",
@@ -408,3 +419,6 @@ fun BottomBar(navController: NavHostController, currentRoute: String) {
         }
     }
 }
+
+
+
