@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.upsidorkin.data.UserSession
 import com.example.upsidorkin.ui.theme.UpSidorkinTheme
 import com.example.upsidorkin.ui.view.*
 
@@ -41,18 +42,22 @@ class MainActivity : ComponentActivity() {
                         composable("register") { RegisterScreen(navController = navController) }
 
                         composable("home") { HomeScreen(navController = navController) }
+
                         composable("profile") {
+                            val userId = UserSession.userId
+                            val accessToken = UserSession.accessToken
 
-                            val fakeUserId = "9354f7ad-ff76-4dba-9568-8193a699480f"
-                            val fakeAccessToken = "FAKE_TOKEN"
-
-                            ProfileScreen(
-                                navController = navController,
-                                userId = fakeUserId,
-                                accessToken = fakeAccessToken
-                            )
+                            if (userId != null && accessToken != null) {
+                                ProfileScreen(
+                                    navController = navController,
+                                    userId = userId,
+                                    accessToken = accessToken
+                                )
+                            } else {
+                                // если сессии нет, отправляем на логин
+                                LoginScreen(navController = navController)
+                            }
                         }
-
 
                         composable("forgot_password") {
                             ForgotPasswordScreen(navController)

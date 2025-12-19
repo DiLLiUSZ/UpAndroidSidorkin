@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.upsidorkin.data.RetrofitInstance
+import com.example.upsidorkin.data.UserSession
 import com.example.upsidorkin.data.model.SignInRequest
 import kotlinx.coroutines.launch
 
@@ -18,7 +19,16 @@ class SignInViewModel : ViewModel() {
             try {
                 val response = RetrofitInstance.userManagementService.signIn(signInRequest)
                 if (response.isSuccessful) {
-                    // успешная авторизация -> переход на Home
+                    val body = response.body()
+                    if (body != null) {
+                        // предполагаем, что в SignInResponse есть поля access_token и user.id
+                        val accessToken = body.access_token
+                        val userId = body.user.id
+
+                        UserSession.accessToken = accessToken
+                        UserSession.userId = userId
+                    }
+
                     navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
                     }

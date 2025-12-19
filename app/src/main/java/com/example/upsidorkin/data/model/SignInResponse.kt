@@ -1,5 +1,10 @@
 package com.example.upsidorkin.data.model
 
-data class SignInResponse (
+data class SignInResponse(
+    val access_token: String,
+    val user: UserDto
+)
+
+data class UserDto(
     val id: String
 )
