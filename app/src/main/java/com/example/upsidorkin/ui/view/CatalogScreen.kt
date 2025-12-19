@@ -43,7 +43,8 @@ data class CatalogProduct(
     val categoryId: String?,
     val isBestSeller: Boolean,
     val imageRes: Int,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val description: String = ""        // описание из базы
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,7 +97,8 @@ fun CatalogScreen(
                     categoryId = p.category_id,
                     isBestSeller = p.is_best_seller == true,
                     imageRes = R.drawable.img_shoe_blue,
-                    isFavorite = favSet.contains(p.id)
+                    isFavorite = favSet.contains(p.id),
+                    description = p.description           // берём описание из базы
                 )
             }
         } catch (e: Exception) {
@@ -248,11 +250,17 @@ fun CatalogScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(filteredProducts) { product ->
-                    CatalogProductCard(
-                        product = product,
-                        onToggleFavorite = ::toggleFavourite
-                    )
+                items(filteredProducts, key = { it.id }) { product ->
+                    Box(
+                        modifier = Modifier.clickable {
+                            navController.navigate("details/${product.id}")
+                        }
+                    ) {
+                        CatalogProductCard(
+                            product = product,
+                            onToggleFavorite = ::toggleFavourite
+                        )
+                    }
                 }
             }
         }

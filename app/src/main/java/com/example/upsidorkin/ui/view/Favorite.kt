@@ -2,6 +2,7 @@ package com.example.upsidorkin.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -35,6 +37,7 @@ fun FavoriteScreen(navController: NavHostController) {
     var products by remember { mutableStateOf<List<CatalogProduct>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
 
+    // загрузка избранного
     LaunchedEffect(token, userId) {
         if (token == null || userId == null) return@LaunchedEffect
         isLoading = true
@@ -73,20 +76,45 @@ fun FavoriteScreen(navController: NavHostController) {
         }
     }
 
+    // снять из избранного прямо на этом экране
+    fun removeFromFavourite(product: CatalogProduct) {
+        if (token == null || userId == null) return
+        scope.launch {
+            try {
+                val service = RetrofitInstance.userManagementService
+                service.deleteFavourite(
+                    authHeader = "Bearer $token",
+                    userIdFilter = "eq.$userId",
+                    productIdFilter = "eq.${product.id}"
+                )
+                products = products.filter { it.id != product.id }
+            } catch (_: Exception) {
+                // можно добавить лог при желании
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = { BottomBar(navController = navController, currentRoute = "favorite") },
         containerColor = Color(0xFFF5F7FB)
     ) { innerPadding ->
+        // убираем верхний отступ, оставляем только снизу, чтобы всё было выше
+        val contentPadding = PaddingValues(
+            start = innerPadding.calculateLeftPadding(LayoutDirection.Ltr),
+            end = innerPadding.calculateRightPadding(LayoutDirection.Ltr),
+            bottom = innerPadding.calculateBottomPadding()
+        )
+
         Column(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(contentPadding)
                 .fillMaxSize()
                 .background(Color(0xFFF5F7FB))
         ) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Избранное",
+                        text = "Даниил Сидоркин Создатель Данного Магазина",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -131,8 +159,11 @@ fun FavoriteScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(products) { product ->
-                        FavoriteProductCard(product)
+                    items(products, key = { it.id }) { product ->
+                        FavoriteProductCard(
+                            product = product,
+                            onRemove = { removeFromFavourite(product) }
+                        )
                     }
                 }
             }
@@ -141,7 +172,10 @@ fun FavoriteScreen(navController: NavHostController) {
 }
 
 @Composable
-private fun FavoriteProductCard(product: CatalogProduct) {
+private fun FavoriteProductCard(
+    product: CatalogProduct,
+    onRemove: () -> Unit
+) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(18.dp))
@@ -164,7 +198,9 @@ private fun FavoriteProductCard(product: CatalogProduct) {
                         painter = painterResource(id = R.drawable.ic_heart_filled),
                         contentDescription = "Favorite",
                         tint = Color(0xFFDD4B4B),
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier
+                            .size(14.dp)
+                            .clickable { onRemove() } // клик по сердечку убирает из избранного
                     )
                 }
             }
