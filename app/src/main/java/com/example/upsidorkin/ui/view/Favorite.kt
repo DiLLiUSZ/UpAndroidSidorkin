@@ -114,7 +114,7 @@ fun FavoriteScreen(navController: NavHostController) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Даниил Сидоркин Создатель Данного Магазина",
+                        text = "Избранное",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
                     )
